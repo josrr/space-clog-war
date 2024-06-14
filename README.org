@@ -1,0 +1,47 @@
+#+TITLE: space-clog-war: Spacewar! implemented with CLOG
+#+OPTIONS: toc:nil num:nil
+#+LANGUAGE: es
+#+UNNUMBERED: t
+
+This is an implementation of the Spacewar! game using [[https://github.com/rabbibotton/clog][CLOG]].
+
+* Screenshots
+
+#+NAME:   fig:sc01
+#+ATTR_HTML: :class img-responsive centered
+[[./001.png]]
+
+* How to run the program
+
+To run the program, clone [[https://github.com/josrr/space-clog-war][this]] repository in your Quicklisp
+=local-projects= directory
+
+#+BEGIN_SRC
+ $ cd ~/quicklisp/local-projects/
+ $ git clone https://github.com/josrr/space-clog-war.git
+#+END_SRC
+
+then:
+
+#+BEGIN_SRC
+ $ sbcl
+ This is SBCL 2.2.6, an implementation of ANSI Common Lisp.
+ More information about SBCL is available at <http://www.sbcl.org/>.
+
+ SBCL is free software, provided as is, with absolutely no warranty.
+ It is mostly in the public domain; some portions are provided under
+ BSD-style licenses.  See the CREDITS and COPYING files in the
+ distribution for more information.
+
+ * (ql:register-local-projects)
+ NIL
+ * (ql:quickload "space-clog-war")
+ To load "space-clog-war":
+   Load 1 ASDF system:
+     space-clog-war
+ ; Loading "space-clog-war"
+ ..................................................
+ .....
+ ("space-clog-war")
+ * (space-clog-war:start)
+#+END_SRC
