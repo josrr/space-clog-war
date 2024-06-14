@@ -3,7 +3,9 @@
 #+LANGUAGE: es
 #+UNNUMBERED: t
 
-This is an implementation of the Spacewar! game using [[https://github.com/rabbibotton/clog][CLOG]].
+space-clog-war is an implementation of the Spacewar! game using [[https://github.com/rabbibotton/clog][CLOG]].
+
+This is a work in progress.
 
 * Screenshots
 
