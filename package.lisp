@@ -9,6 +9,12 @@
            #:draw-point
            #:draw-points))
 
+(defpackage #:expensive-planetarium
+  (:use #:cl)
+  (:export #:draw
+           #:update
+           #:planetarium))
+
 (defpackage #:spacewar
   (:use #:cl)
   (:export #:star

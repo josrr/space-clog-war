@@ -13,5 +13,6 @@
   :components ((:file "package")
                (:file "clog-webgl-patch")
                (:file "display")
+               (:file "expensive-planetarium")
                (:file "spacewar")
                (:file "space-clog-war")))

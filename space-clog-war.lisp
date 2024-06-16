@@ -20,6 +20,7 @@
                                                 "powerPreference" "low-power"
                                                 "antialias" t)))
          (display (display:make-display gl))
+         (planetarium (make-instance 'expensive-planetarium:planetarium))
          (star (make-instance 'spacewar:star))
          (sb (create-style-block body)))
     (create-gui-menu-item actions :content "Restart" :on-click (lambda (obj) obj))
@@ -41,6 +42,8 @@
                       (loop
                         (display:clear display)
                         (spacewar:draw star display)
+                        (expensive-planetarium:draw planetarium display)
+                        (expensive-planetarium:update planetarium)
                         (display:draw display)
                         (sleep 1/60))))))
 
