@@ -3,22 +3,25 @@
 (defpackage #:display
   (:use #:cl)
   (:local-nicknames (#:gl #:clog-webgl))
-  (:export #:make-display
-           #:clear
+  (:export #:clear
            #:draw
            #:draw-point
-           #:draw-points))
+           #:draw-points
+           #:height
+           #:make-display
+           #:width))
 
 (defpackage #:expensive-planetarium
   (:use #:cl)
   (:export #:draw
+           #:planetarium
            #:update
-           #:planetarium))
+           #:x))
 
 (defpackage #:spacewar
   (:use #:cl)
-  (:export #:star
-           #:draw))
+  (:export #:draw
+           #:star))
 
 (defpackage #:space-clog-war
   (:use #:cl #:clog #:clog-gui #:clog-webgl)

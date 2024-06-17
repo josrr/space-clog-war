@@ -185,16 +185,20 @@ void main()
 ;;;; Display
 (defclass display ()
   ((texture :initarg :texture :reader texture)
-   (quad :initarg :quad :reader quad)))
+   (quad :initarg :quad :reader quad)
+   (width :initarg :width :reader width)
+   (height :initarg :height :reader height)))
 
 (defparameter *width* 1024)
 (defparameter *height* 1024)
 
 (defun make-display (webgl &optional (width *width*) (height *height*))
   (let ((texture (make-texture webgl width height)))
-   (make-instance 'display
-                  :texture texture
-                  :quad (make-quad webgl (buffer texture)))))
+    (make-instance 'display
+                   :width width
+                   :height height
+                   :texture texture
+                   :quad (make-quad webgl (buffer texture)))))
 
 (defgeneric draw-point (display x y)
   (:documentation "Draws a point in the display")
