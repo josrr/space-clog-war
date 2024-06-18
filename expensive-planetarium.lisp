@@ -37,7 +37,8 @@
             (when (plusp x)
               (decf x *star-map-width*))
             (when (> (incf x (display:width display)) 0)
-              (display:draw-point display (float (- x w/2)) (float (y star))))))))))
+              (display:draw-point display (float (- x w/2)) (float (y star))
+                                  (- 4 (magnitude star))))))))))
 
 (defgeneric update (planetarium)
   (:method ((planetarium planetarium))

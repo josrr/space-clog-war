@@ -22,11 +22,12 @@
     (let ((webgl (getf initargs :webgl)))
       (setf frame-buffer (gl:create-webgl-frame-buffer webgl)
             buffer (gl:create-webgl-texture webgl)
-            points (make-array 2048
-                               :element-type 'single-float
-                               :initial-element 0.0f0
-                               :adjustable t
-                               :fill-pointer 0)))))
+            points (loop repeat 4
+                         collect (make-array 1024
+                                             :element-type 'single-float
+                                             :initial-element 0.0f0
+                                             :adjustable t
+                                             :fill-pointer 0))))))
 
 (defclass quad (gldata)
   ((ebo :reader ebo)
@@ -170,10 +171,13 @@ void main()
   (gl:bind-frame-buffer (frame-buffer obj) :DRAW_FRAMEBUFFER)
   (gl:clear-webgl (webgl obj) :COLOR_BUFFER_BIT)
   (gl:bind-buffer (vbo obj) :ARRAY_BUFFER)
-  (gl:buffer-data (vbo obj) (coerce (points obj) 'list) "Float32Array" :STATIC_DRAW)
-  (gl:uniform-float (webgl obj) (gl:uniform-location (program obj) "color") 0.3 0.9 0.8)
-  (gl:uniform-float (webgl obj) (gl:uniform-location (program obj) "size") 2.0)
-  (gl:draw-arrays (webgl obj) :POINTS 0 (/ (fill-pointer (points obj)) 2)))
+  (loop for points in (points obj)
+        for intensity from 2.5 by 1.25
+        if (plusp (fill-pointer points)) do
+          (gl:buffer-data (vbo obj) (coerce points 'list) "Float32Array" :STATIC_DRAW)
+          (gl:uniform-float (webgl obj) (gl:uniform-location (program obj) "color") 0.3 0.9 0.8)
+          (gl:uniform-float (webgl obj) (gl:uniform-location (program obj) "size") intensity)
+          (gl:draw-arrays (webgl obj) :POINTS 0 (/ (fill-pointer points) 2))))
 
 (defmethod draw ((obj quad))
   (gl:use-program (program obj))
@@ -200,20 +204,22 @@ void main()
                    :texture texture
                    :quad (make-quad webgl (buffer texture)))))
 
-(defgeneric draw-point (display x y)
+(defgeneric draw-point (display x y &optional intensity)
   (:documentation "Draws a point in the display")
-  (:method ((display display) x y)
+  (:method ((display display) x y &optional (intensity 0))
     (with-slots (points) (texture display)
-      (vector-push-extend x points)
-      (vector-push-extend y points))))
-
-(defgeneric draw-points (display new-points)
-  (:documentation "Draws multiple points in the display")
-  (:method ((display display) new-points)
-    (with-slots (points) (texture display)
-      (loop for (x y) on new-points by #'cddr do
+      (let ((points (elt points intensity)))
         (vector-push-extend x points)
         (vector-push-extend y points)))))
+
+(defgeneric draw-points (display new-points &optional intensity)
+  (:documentation "Draws multiple points in the display")
+  (:method ((display display) new-points &optional (intensity 0))
+    (with-slots (points) (texture display)
+      (loop with points = (elt points intensity)
+            for (x y) on new-points by #'cddr do
+              (vector-push-extend x points)
+              (vector-push-extend y points)))))
 
 (defmethod draw ((display display))
   (draw (texture display))
@@ -222,5 +228,5 @@ void main()
 (defgeneric clear (display)
   (:documentation "Clears the display")
   (:method ((obj display))
-    (with-slots (points) (texture obj)
+    (loop for points in (points (texture obj)) do
       (setf (fill-pointer points) 0))))

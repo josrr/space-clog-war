@@ -3,8 +3,11 @@
 (defparameter *width* 1024)
 (defparameter *height* 1024)
 
+(defparameter *debug* nil)
+
 (defun on-new-window (body)
-  ;; (debug-mode body)
+  (when *debug*
+    (debug-mode body))
   (setf (title (html-document body)) "Space clog war!")
   (load-css (html-document body)
             "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css")
@@ -22,7 +25,15 @@
          (display (display:make-display gl))
          (planetarium (make-instance 'expensive-planetarium:planetarium))
          (star (make-instance 'spacewar:star))
-         (sb (create-style-block body)))
+         (sb (create-style-block body))
+         (pausep nil)
+         (pause-button (and *debug* (create-button div-canvas :content "Pause" :class "btn btn-primary")))
+         (label (and *debug* (create-p div-canvas
+                                     :content (format nil "~d" (expensive-planetarium:x planetarium))))))
+    (when *debug*
+      (set-on-click pause-button (lambda (obj)
+                                   (declare (ignore obj))
+                                   (setf pausep (if pausep nil t)))))
     (create-gui-menu-item actions :content "Restart" :on-click (lambda (obj) obj))
     (create-gui-menu-item actions :content "Reset" :on-click (lambda (obj) obj))
     (format *debug-io* "~D x ~D~%" (drawing-buffer-width gl) (drawing-buffer-height gl))
@@ -38,14 +49,16 @@
     (clear-color gl 0.0f0 0.0f0 0.0f0 1.0f0)
     (clear-webgl gl :COLOR_BUFFER_BIT)
     (clear-color gl 0.0f0 0.0f0 0.0f0 0.05f0)
-    (bt:make-thread (lambda ()
-                      (loop
-                        (display:clear display)
-                        (spacewar:draw star display)
-                        (expensive-planetarium:draw planetarium display)
-                        (expensive-planetarium:update planetarium)
-                        (display:draw display)
-                        (sleep 1/60))))))
+    (loop
+      if (or (not *debug*) (not pausep)) do
+        (display:clear display)
+        (spacewar:draw star display)
+        (expensive-planetarium:draw planetarium display)
+        (expensive-planetarium:update planetarium)
+        (display:draw display)
+      if *debug* do
+        (setf (text label) (format nil "~d" (expensive-planetarium:x planetarium)))
+      do (sleep 1/25))))
 
 (defun start ()
   "Start Space clog war!."
