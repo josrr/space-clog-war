@@ -48,7 +48,7 @@
     (blend-function gl :ONE :ONE_MINUS_SRC_ALPHA)
     (clear-color gl 0.0f0 0.0f0 0.0f0 1.0f0)
     (clear-webgl gl :COLOR_BUFFER_BIT)
-    (clear-color gl 0.0f0 0.0f0 0.0f0 0.05f0)
+    (clear-color gl 0.0f0 0.0f0 0.0f0 0.075f0)
     (loop
       if (or (not *debug*) (not pausep)) do
         (display:clear display)

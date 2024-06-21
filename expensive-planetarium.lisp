@@ -11,15 +11,16 @@
 
 (defun load-stars (filename)
   (with-open-file (stream filename :direction :input)
-    (loop for group in (read stream)
-          append (mapcar (lambda (star)
-                           (make-instance 'star
-                                          :x (- *star-map-width* (first star))
-                                          :y (second star)
-                                          :name (fourth star)
-                                          :constellation (fifth star)
-                                          :magnitude (car group)))
-                         (cdr group)))))
+    (sort (loop for group in (read stream)
+                append (mapcar (lambda (star)
+                                 (make-instance 'star
+                                                :x (- *star-map-width* (first star))
+                                                :y (second star)
+                                                :name (fifth star)
+                                                :constellation (fourth star)
+                                                :magnitude (car group)))
+                               (cdr group)))
+          #'> :key #'x)))
 
 (defparameter *stars* (load-stars #P"stars-data.lisp"))
 
@@ -32,13 +33,16 @@
   (:method ((planetarium planetarium) display)
     (when (zerop (mod (counter planetarium) 2))
       (let ((w/2 (/ (display:width display) 2)))
-        (dolist (star (stars planetarium))
-          (let ((x (- (x star) (x planetarium))))
-            (when (plusp x)
-              (decf x *star-map-width*))
-            (when (> (incf x (display:width display)) 0)
-              (display:draw-point display (float (- x w/2)) (float (y star))
-                                  (- 4 (magnitude star))))))))))
+        (loop for star in (stars planetarium)
+              for x = (- (x star) (x planetarium))
+              with drawn-p = nil
+              if (plusp x) do
+                (decf x *star-map-width*)
+              if (> (incf x (display:width display)) 0) do
+                (display:draw-point display (float (- x w/2)) (float (y star))
+                                    (- 4 (magnitude star)))
+                (setf drawn-p t)
+              else if drawn-p do (return))))))
 
 (defgeneric update (planetarium)
   (:method ((planetarium planetarium))
