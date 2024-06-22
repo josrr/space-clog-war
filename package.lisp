@@ -9,7 +9,8 @@
            #:draw-points
            #:height
            #:make-display
-           #:width))
+           #:width
+           #:width/2))
 
 (defpackage #:expensive-planetarium
   (:use #:cl)
