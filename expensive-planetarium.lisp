@@ -26,23 +26,20 @@
 
 (defclass planetarium ()
   ((stars :initform *stars* :reader stars)
+   (star-map-width :initform *star-map-width* :reader star-map-width)
    (x :initform (* *star-map-width* 1/2) :accessor x)
    (counter :initform 0 :accessor counter)))
 
 (defgeneric draw (planetarium display)
   (:method ((planetarium planetarium) display)
     (when (zerop (mod (counter planetarium) 2))
-      (let ((w/2 (/ (display:width display) 2)))
-        (loop for star in (stars planetarium)
-              for x = (- (x star) (x planetarium))
-              with drawn-p = nil
-              if (plusp x) do
-                (decf x *star-map-width*)
-              if (> (incf x (display:width display)) 0) do
-                (display:draw-point display (float (- x w/2)) (float (y star))
-                                    (- 4 (magnitude star)))
-                (setf drawn-p t)
-              else if drawn-p do (return))))))
+      (dolist (star (stars planetarium))
+        (let ((x (- (x star) (x planetarium))))
+          (when (plusp x)
+            (decf x (star-map-width planetarium)))
+          (when (and (minusp x) (plusp (incf x (display:width display))))
+            (display:draw-point display (- x (display:width/2 display)) (y star)
+                                (- 4 (magnitude star)))))))))
 
 (defgeneric update (planetarium)
   (:method ((planetarium planetarium))
@@ -52,4 +49,4 @@
         (setf counter 0)
         (decf x)
         (when (minusp x)
-          (setf x *star-map-width*))))))
+          (setf x (star-map-width planetarium)))))))
