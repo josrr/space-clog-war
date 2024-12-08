@@ -9,9 +9,9 @@ This is a work in progress.
 
 * Screenshots
 
-#+NAME:   fig:sc01
+#+NAME:   fig:scw01
 #+ATTR_HTML: :class img-responsive centered
-[[./001.png]]
+[[./scw01.mp4]]
 
 * How to run the program
 
