@@ -2,13 +2,15 @@
 
 ;;;;
 (defclass obj ()
-  ((pos :initarg :pos :reader pos)
+  (;;(pos :initarg :pos :reader pos)
+   (x :initarg :x :initform 0.0 :accessor x)
+   (y :initarg :y :initform 0.0 :accessor y)
    (box :initarg :box :reader box)))
 
-(defclass star (obj)
-  ())
+(defgeneric update (obj)
+  (:documentation "Updates OBJ properties"))
 
-(defclass ship (obj)
+(defclass star (obj)
   ())
 
 (defclass missile (obj)
@@ -23,6 +25,6 @@
     (loop with bx = (random-step)
           with by = (random-step)
           repeat (+ 9 (random 8))
-          for x = 0.0 then (+ x bx)
-          for y = 0.0 then (+ y by)
+          for x = (x obj) then (+ x bx)
+          for y = (y obj) then (+ y by)
           do (display:draw-point display x y))))

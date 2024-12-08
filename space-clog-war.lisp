@@ -29,7 +29,9 @@
          (pausep nil)
          (pause-button (and *debug* (create-button div-canvas :content "Pause" :class "btn btn-primary")))
          (label (and *debug* (create-p div-canvas
-                                     :content (format nil "~d" (expensive-planetarium:x planetarium))))))
+                                       :content (format nil "~d" (spacewar:x planetarium)))))
+         (ship-ot1 (make-instance 'spacewar::ot1 :x 256.0 :y 256.0))
+         (ship-ot2 (make-instance 'spacewar::ot2 :x -256.0 :y -256.0 :theta pi)))
     (when *debug*
       (set-on-click pause-button (lambda (obj)
                                    (declare (ignore obj))
@@ -53,12 +55,16 @@
       if (or (not *debug*) (not pausep)) do
         (display:clear display)
         (spacewar:draw star display)
-        (expensive-planetarium:draw planetarium display)
-        (expensive-planetarium:update planetarium)
+        (spacewar:draw planetarium display)
+        (spacewar:draw ship-ot1 display)
+        (spacewar:draw ship-ot2 display)
+        (spacewar:update planetarium)
+        (spacewar:update ship-ot1)
+        (spacewar:update ship-ot2)
         (display:draw display)
       if *debug* do
-        (setf (text label) (format nil "~d" (expensive-planetarium:x planetarium)))
-      do (sleep 1/25))))
+        (setf (text label) (format nil "~d" (spacewar:x planetarium)))
+      do (sleep 1/65))))
 
 (defun start ()
   "Start Space clog war!."

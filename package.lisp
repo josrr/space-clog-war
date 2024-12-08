@@ -14,15 +14,20 @@
 
 (defpackage #:expensive-planetarium
   (:use #:cl)
-  (:export #:draw
+  (:export ;; #:draw
            #:planetarium
-           #:update
-           #:x))
+           ;;#:update
+           ;;#:x
+           ))
 
 (defpackage #:spacewar
   (:use #:cl)
+  (:local-nicknames (#:a #:alexandria))
   (:export #:draw
-           #:star))
+           #:update
+           #:star
+           #:obj
+           #:x))
 
 (defpackage #:space-clog-war
   (:use #:cl #:clog #:clog-gui #:clog-webgl)
