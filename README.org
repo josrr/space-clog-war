@@ -11,7 +11,7 @@ This is a work in progress.
 
 #+NAME:   fig:scw01
 #+ATTR_HTML: :class img-responsive centered
-[[./scw01.mp4]]
+[[./scw01.gif]]
 
 * How to run the program
 
