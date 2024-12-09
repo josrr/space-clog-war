@@ -7,7 +7,7 @@
    (program :initarg :program :accessor program)))
 
 (defmethod initialize-instance :after ((instance gldata) &rest initargs &key &allow-other-keys)
-  (with-slots (vbo vao frame-buffer buffer) instance
+  (with-slots (vbo vao) instance
     (let ((webgl (getf initargs :webgl)))
       (setf vao (gl:create-vertex-array webgl)
             vbo (gl:create-webgl-buffer webgl)))))
