@@ -7,17 +7,19 @@
    (y :initarg :y :initform 0.0 :accessor y)
    (box :initarg :box :reader box)))
 
-(defgeneric update (obj)
-  (:documentation "Updates OBJ properties"))
-
 (defclass star (obj)
   ())
 
 (defclass missile (obj)
   ())
 
+(defgeneric update (obj &optional event)
+  (:documentation "Updates OBJ properties"))
+
 (defgeneric draw (obj display)
   (:documentation "Draws OBJ in DISPLAY"))
+
+;; (defgeneric read-input (obj event) (:documentation "Reads Input DISPLAY"))
 
 (defmethod draw ((obj star) display)
   (labels ((random-step ()

@@ -9,6 +9,7 @@
    (xx :initform 0.0 :accessor xx)
    (yy :initform 0.0 :accessor yy)
    (flipped :initarg :flipped :initform nil :accessor flipped-p)
+   (pace :initarg :pace :initform 0.1 :accessor pace)
    (theta :initarg :theta :initform 0.0 :accessor theta)
    (sin :initform (sin 0.0) :accessor sine)
    (cos :initform (cos 0.0) :accessor cosine)
@@ -148,7 +149,34 @@
                       #o365114
                       #o700000))
 
-(defmethod spacewar:update ((obj ship))
-  (incf (theta obj) 0.01)
-  (decf (x obj) (* (sine obj) .5))
-  (decf (y obj) (* (cosine obj) .85)))
+(defmethod spacewar:update :before ((obj ot1) &optional event)
+  (when event
+    (let ((key (getf event :key)))
+      (cond ((equalp key "ArrowUp")
+             ;;(decf (pace obj) 0.05)
+             t)
+            ((equalp key "ArrowDown")
+             (incf (pace obj) 0.05))
+            ((equalp key "ArrowRight")
+             (incf (theta obj) 0.05))
+            ((equalp key "ArrowLeft")
+             (decf (theta obj) 0.05))))))
+
+(defmethod spacewar:update :before ((obj ot2) &optional event)
+  (when event
+    (let ((key (getf event :key)))
+      (cond ((equalp key "w")
+             ;;(decf (pace obj) 0.05)
+             t)
+            ((equalp key "s")
+             (incf (pace obj) 0.05))
+            ((equalp key "d")
+             (incf (theta obj) 0.05))
+            ((equalp key "a")
+             (decf (theta obj) 0.05))))))
+
+(defmethod spacewar:update ((obj ship) &optional event)
+  (unless event
+    ;;(incf (theta obj) 0.01)
+    (decf (x obj) (* (sine obj) (pace obj)))
+    (decf (y obj) (* (cosine obj) (pace obj)))))

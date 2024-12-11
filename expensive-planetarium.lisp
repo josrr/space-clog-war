@@ -52,7 +52,8 @@
           (display:draw-point display (- x (display:width/2 display)) (y star)
                               (- 4 (magnitude star))))))))
 
-(defmethod spacewar:update ((planetarium planetarium))
+(defmethod spacewar:update ((planetarium planetarium) &optional event)
+  (declare (ignore event))
   (with-accessors ((x spacewar:x) (counter counter)) planetarium
     (incf counter)
     (when (= 20 counter)
