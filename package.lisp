@@ -14,11 +14,7 @@
 
 (defpackage #:expensive-planetarium
   (:use #:cl)
-  (:export ;; #:draw
-           #:planetarium
-           ;;#:update
-           ;;#:x
-           ))
+  (:export #:planetarium))
 
 (defpackage #:spacewar
   (:use #:cl)
@@ -27,7 +23,9 @@
            #:update
            #:star
            #:obj
-           #:x))
+           #:x
+           #:ot1
+           #:ot2))
 
 (defpackage #:space-clog-war
   (:use #:cl #:clog #:clog-gui #:clog-webgl)
