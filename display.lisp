@@ -136,11 +136,12 @@ void main()
                              :program program)))
     (gl:uniform-matrix webgl 4 (gl:uniform-location program "view") nil
                        (coerce (rtg-math.matrix4:identity) 'list))
-    (gl:uniform-matrix webgl 4 (gl:uniform-location program "proj") nil (coerce (kit.math:ortho-matrix
-                                                                                 (- med-width) med-width
-                                                                                 (- med-height) med-height
-                                                                                 0.0001 3000.0)
-                                                                                'list))
+    (gl:uniform-matrix webgl 4 (gl:uniform-location program "proj") nil
+                       (coerce (kit.math:ortho-matrix
+                                (- med-width) med-width
+                                (- med-height) med-height
+                                0.0001 3000.0)
+                               'list))
     (gl:uniform-matrix webgl 4 (gl:uniform-location program "model") nil
                        (coerce (rtg-math.matrix4:identity) 'list))
     (gl:bind-vertex-array (vao obj))
@@ -152,7 +153,8 @@ void main()
     (gl:texture-image-2d webgl :TEXTURE_2D 0 :RGBA width height 0 :RGBA :UNSIGNED_BYTE nil)
     (gl:texture-parameter-integer webgl :TEXTURE_2D :TEXTURE_MIN_FILTER :LINEAR)
     (gl:texture-parameter-integer webgl :TEXTURE_2D :TEXTURE_MAG_FILTER :LINEAR)
-    (gl:frame-buffer-texture-2d webgl :DRAW_FRAMEBUFFER :COLOR_ATTACHMENT0 :TEXTURE_2D (buffer obj) 0)
+    (gl:frame-buffer-texture-2d webgl :DRAW_FRAMEBUFFER :COLOR_ATTACHMENT0 :TEXTURE_2D
+                                (buffer obj) 0)
     obj))
 
 (defun make-quad (webgl texture-buffer
