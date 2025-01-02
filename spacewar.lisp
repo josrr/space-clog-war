@@ -2,15 +2,29 @@
 
 ;;;;
 (defclass obj ()
-  (;;(pos :initarg :pos :reader pos)
-   (x :initarg :x :initform 0.0 :accessor x)
+  ((x :initarg :x :initform 0.0 :accessor x)
    (y :initarg :y :initform 0.0 :accessor y)
    (box :initarg :box :reader box)))
+
+(defclass toroidal (obj)
+  ())
+
+(defmethod (setf x) :after (new-value (object toroidal))
+  (cond ((> new-value 512)
+         (setf (slot-value object 'x) (- new-value 1024)))
+        ((< new-value -512)
+         (setf (slot-value object 'x) (+ new-value 1024)))))
+
+(defmethod (setf y) :after (new-value (object toroidal))
+  (cond ((> new-value 512)
+         (setf (slot-value object 'y) (- new-value 1024)))
+        ((< new-value -512)
+         (setf (slot-value object 'y) (+ new-value 1024)))))
 
 (defclass star (obj)
   ())
 
-(defclass missile (obj)
+(defclass missile (toroidal)
   ())
 
 (defgeneric update (obj &optional event)

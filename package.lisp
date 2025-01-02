@@ -23,6 +23,7 @@
            #:update
            #:star
            #:obj
+           #:toroidal
            #:x
            #:ot1
            #:ot2))

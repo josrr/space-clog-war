@@ -1,6 +1,6 @@
 (in-package #:spacewar)
 
-(defclass ship (obj)
+(defclass ship (toroidal)
   ((size :initform 1.0 :accessor size)
    (x :initarg :x :initform 0.0 :accessor x)
    (y :initarg :y :initform 0.0 :accessor y)
