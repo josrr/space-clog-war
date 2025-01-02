@@ -177,6 +177,5 @@
 
 (defmethod spacewar:update ((obj ship) &optional event)
   (unless event
-    ;;(incf (theta obj) 0.01)
     (decf (x obj) (* (sine obj) (pace obj)))
     (decf (y obj) (* (cosine obj) (pace obj)))))

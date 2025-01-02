@@ -30,18 +30,6 @@
    (counter :initform 0 :accessor counter))
   (:default-initargs :x (* *star-map-width* 1/2)))
 
-#|
-(defmethod spacewar:draw ((planetarium planetarium) display)
-  (when (zerop (mod (counter planetarium) 2))
-    (dolist (star (stars planetarium))
-      (let ((x (- (x star) (x planetarium))))
-        (when (plusp x)
-          (decf x (star-map-width planetarium)))
-        (when (and (minusp x) (plusp (incf x (display:width display))))
-          (display:draw-point display (- x (display:width/2 display)) (y star)
-                              (- 4 (magnitude star))))))))
-|#
-
 (defmethod spacewar:draw ((planetarium planetarium) display)
   (when (zerop (mod (counter planetarium) 2))
     (dolist (star (stars planetarium))

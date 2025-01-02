@@ -19,8 +19,6 @@
 (defgeneric draw (obj display)
   (:documentation "Draws OBJ in DISPLAY"))
 
-;; (defgeneric read-input (obj event) (:documentation "Reads Input DISPLAY"))
-
 (defmethod draw ((obj star) display)
   (labels ((random-step ()
              (- (random 1.8) 0.9)))
