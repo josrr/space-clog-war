@@ -1,6 +1,8 @@
 (in-package #:spacewar)
 
 ;;;;
+(defparameter *display* nil)
+
 (defclass obj ()
   ((x :initarg :x :initform 0.0 :accessor x)
    (y :initarg :y :initform 0.0 :accessor y)
@@ -10,16 +12,18 @@
   ())
 
 (defmethod (setf x) :after (new-value (object toroidal))
-  (cond ((> new-value 512)
-         (setf (slot-value object 'x) (- new-value 1024)))
-        ((< new-value -512)
-         (setf (slot-value object 'x) (+ new-value 1024)))))
+  (when *display*
+    (cond ((> new-value (display:width/2 *display*))
+           (setf (slot-value object 'x) (- new-value (display:width *display*))))
+          ((< new-value (- (display:width/2 *display*)))
+           (setf (slot-value object 'x) (+ new-value (display:width *display*)))))))
 
 (defmethod (setf y) :after (new-value (object toroidal))
-  (cond ((> new-value 512)
-         (setf (slot-value object 'y) (- new-value 1024)))
-        ((< new-value -512)
-         (setf (slot-value object 'y) (+ new-value 1024)))))
+  (when *display*
+    (cond ((> new-value (display:width/2 *display*))
+           (setf (slot-value object 'y) (- new-value (display:width *display*))))
+          ((< new-value (- (display:width/2 *display*)))
+           (setf (slot-value object 'y) (+ new-value (display:width *display*)))))))
 
 (defclass star (obj)
   ())
