@@ -22,7 +22,7 @@
                                (cdr group)))
           #'> :key #'x)))
 
-(defparameter *stars* (load-stars #P"stars-data.lisp"))
+(defparameter *stars* (load-stars (asdf:system-relative-pathname 'space-clog-war #p"stars-data.lisp")))
 
 (defclass planetarium (spacewar:obj)
   ((stars :initform *stars* :reader stars)
