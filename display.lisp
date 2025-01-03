@@ -212,9 +212,12 @@ void main()
                    :texture texture
                    :quad (make-quad webgl (buffer texture)))))
 
-(defun toroid (value)
-  (float (if (< -512 value 512) value (if (minusp value)
-                                          (+ value 1024) (- value 1024)))
+(defun toroid (value display)
+  (float (if (< (- (width/2 display)) value (width/2 display))
+             value
+             (if (minusp value)
+                 (+ value (width display))
+                 (- value (width display))))
          1.0f0))
 
 (defgeneric draw-point (display x y &optional intensity)
@@ -222,8 +225,8 @@ void main()
   (:method ((display display) x y &optional (intensity 0))
     (with-slots (points) (texture display)
       (let ((points (elt points intensity)))
-        (vector-push-extend (toroid x) points)
-        (vector-push-extend (toroid y) points)))))
+        (vector-push-extend (toroid x display) points)
+        (vector-push-extend (toroid y display) points)))))
 
 (defgeneric draw-points (display new-points &optional intensity)
   (:documentation "Draws multiple points in the display")
@@ -231,8 +234,8 @@ void main()
     (with-slots (points) (texture display)
       (loop with points = (elt points intensity)
             for (x y) on new-points by #'cddr
-            do (vector-push-extend (toroid x) points)
-               (vector-push-extend (toroid y) points)))))
+            do (vector-push-extend (toroid x display) points)
+               (vector-push-extend (toroid y display) points)))))
 
 (defmethod draw ((display display))
   (draw (texture display))
