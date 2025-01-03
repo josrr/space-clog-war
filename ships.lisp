@@ -149,11 +149,11 @@
                       #o365114
                       #o700000))
 
-(defmethod spacewar:update :before ((obj ot1) &optional event)
+(defmethod spacewar:update :before ((obj ot1) display &optional event)
+  (declare (ignore display))
   (when event
     (let ((key (getf event :key)))
       (cond ((equalp key "ArrowUp")
-             ;;(decf (pace obj) 0.05)
              t)
             ((equalp key "ArrowDown")
              (incf (pace obj) 0.05))
@@ -162,11 +162,11 @@
             ((equalp key "ArrowLeft")
              (decf (theta obj) 0.05))))))
 
-(defmethod spacewar:update :before ((obj ot2) &optional event)
+(defmethod spacewar:update :before ((obj ot2) display &optional event)
+  (declare (ignore display))
   (when event
     (let ((key (getf event :key)))
       (cond ((equalp key "w")
-             ;;(decf (pace obj) 0.05)
              t)
             ((equalp key "s")
              (incf (pace obj) 0.05))
@@ -175,7 +175,8 @@
             ((equalp key "a")
              (decf (theta obj) 0.05))))))
 
-(defmethod spacewar:update ((obj ship) &optional event)
+(defmethod spacewar:update ((obj ship) display &optional event)
   (unless event
-    (decf (x obj) (* (sine obj) (pace obj)))
-    (decf (y obj) (* (cosine obj) (pace obj)))))
+    (let ((*display* display))
+      (decf (x obj) (* (sine obj) (pace obj)))
+      (decf (y obj) (* (cosine obj) (pace obj))))))

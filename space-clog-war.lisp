@@ -8,8 +8,8 @@
 (defun on-key-down (obj event)
   (let ((ot1 (connection-data-item obj "ship-ot1"))
         (ot2 (connection-data-item obj "ship-ot2")))
-    (spacewar:update ot1 event)
-    (spacewar:update ot2 event)))
+    (spacewar:update ot1 t event)
+    (spacewar:update ot2 t event)))
 
 (defun on-new-window (body)
   (when *debug*
@@ -69,7 +69,7 @@
         (display:clear display)
         (spacewar:draw star display)
         (loop for obj in objects do (spacewar:draw obj display))
-        (loop for obj in objects do (spacewar:update obj))
+        (loop for obj in objects do (spacewar:update obj display))
         (display:draw display)
       if *debug* do
         (setf (text label) (format nil "~d" (spacewar:x planetarium)))

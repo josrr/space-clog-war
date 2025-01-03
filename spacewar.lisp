@@ -31,7 +31,7 @@
 (defclass missile (toroidal)
   ())
 
-(defgeneric update (obj &optional event)
+(defgeneric update (obj display &optional event)
   (:documentation "Updates OBJ properties"))
 
 (defgeneric draw (obj display)
