@@ -39,8 +39,10 @@
          (label (and *debug* (create-p div-canvas
                                        :content (format nil "~d" (spacewar:x planetarium)))))
          (star (make-instance 'spacewar:star))
-         (ship-ot1 (make-instance 'spacewar:ot1 :x 256.0 :y 256.0))
-         (ship-ot2 (make-instance 'spacewar:ot2 :x -256.0 :y -256.0 :theta pi))
+         (ship-ot1 (make-instance 'spacewar:ot1 :x 256.0 :y 256.0
+                                                :theta 0.0 :dx 0.0 :dy 0.0))
+         (ship-ot2 (make-instance 'spacewar:ot2 :x -256.0 :y -256.0
+                                                :theta pi :dx 0.0 :dy 0.0))
          (objects (list planetarium ship-ot1 ship-ot2)))
     (setf (connection-data-item body "ship-ot1") ship-ot1
           (connection-data-item body "ship-ot2") ship-ot2)
@@ -62,7 +64,7 @@
     (blend-function gl :ONE :ONE_MINUS_SRC_ALPHA)
     (clear-color gl 0.0f0 0.0f0 0.0f0 1.0f0)
     (clear-webgl gl :COLOR_BUFFER_BIT)
-    (clear-color gl 0.0f0 0.0f0 0.0f0 0.075f0)
+    (clear-color gl 0.001f0 0.001f0 0.0f0 0.06f0)
     (set-on-key-down body 'on-key-down :disable-default t)
     (loop
       if (or (not *debug*) (not pausep)) do

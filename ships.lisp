@@ -9,6 +9,8 @@
    (xx :initform 0.0 :accessor xx)
    (yy :initform 0.0 :accessor yy)
    (flipped :initarg :flipped :initform nil :accessor flipped-p)
+   (dx :initarg :dx :initform 0.0 :accessor dx)
+   (dy :initarg :dy :initform 0.0 :accessor dy)
    (pace :initarg :pace :initform 0.1 :accessor pace)
    (theta :initarg :theta :initform 0.0 :accessor theta)
    (sin :initform (sin 0.0) :accessor sine)
@@ -94,42 +96,42 @@
         (setf (saved-x obj) (xx obj)
               (saved-y obj) (yy obj)))))
 
-(defgeneric flip (obj)
-  (:method ((obj ship))
-    (setf (xx obj) (x obj)
-          (yy obj) (y obj)
+(defgeneric flip (obj display)
+  (:method ((obj ship) display)
+    (setf (flipped-p obj) (not (flipped-p obj))
           (saved-x obj) nil
           (saved-y obj) nil
-          (flipped-p obj) (not (flipped-p obj)))))
+          (xx obj) (x obj)
+          (yy obj) (y obj))
+    (when (flipped-p obj)
+      (spacewar:draw obj display))))
 
 (eval-when (:load-toplevel :compile-toplevel :execute)
   (defun generate-instruction (byte)
-    (cond ((< byte 6) (case byte
-                        ((0 1) `(draw-point obj display :down))
-                        (2 `(draw-point obj display :out))
-                        (3 `(draw-point obj display :out-down))
-                        (4 `(draw-point obj display :in))
-                        (5 `(draw-point obj display :in-down))))
+    (cond ((< byte 6) (values (case byte
+                                ((0 1) `(draw-point obj display :down))
+                                (2 `(draw-point obj display :out))
+                                (3 `(draw-point obj display :out-down))
+                                (4 `(draw-point obj display :in))
+                                (5 `(draw-point obj display :in-down)))
+                              nil))
           (t (case byte
-               (6 `(save/restore obj))
-               (7 `(flip obj)))))))
+               (6 (values `(save/restore obj) nil))
+               (7 (values `(flip obj display) t)))))))
 
 (defmacro compile-outline (name (&rest encoding))
   `(progn
      (defclass ,name (ship) ())
      (defmethod spacewar:draw ((obj ,name) display)
        ,@(loop for word in encoding
-               append (loop with bits = (integer-length word)
-                            with rest = (mod bits 3)
-                            for pos = (if (> rest 0) (- bits rest) (- bits 3))
-                              then (- pos 3)
-                            for size = (if (> rest 0) rest 3)
-                              then 3
-                            for byte = (byte size pos)
+               append (loop for pos = 15 then (- pos 3)
+                            for byte = (byte 3 pos)
                             while (>= pos 0)
-                            for instruction = (generate-instruction (ldb byte word))
+                            for (instruction end-p) = (multiple-value-list
+                                                       (generate-instruction (ldb byte word)))
                             if instruction
-                              collect instruction)))))
+                              collect instruction
+                            until end-p)))))
 
 (compile-outline ot1 (#o111131
                       #o111111
@@ -156,7 +158,8 @@
       (cond ((equalp key "ArrowUp")
              t)
             ((equalp key "ArrowDown")
-             (incf (pace obj) 0.05))
+             (incf (dx obj) (* (sine obj) (pace obj)))
+             (incf (dy obj) (* (cosine obj) (pace obj))))
             ((equalp key "ArrowRight")
              (incf (theta obj) 0.05))
             ((equalp key "ArrowLeft")
@@ -169,7 +172,8 @@
       (cond ((equalp key "w")
              t)
             ((equalp key "s")
-             (incf (pace obj) 0.05))
+             (incf (dx obj) (* (sine obj) (pace obj)))
+             (incf (dy obj) (* (cosine obj) (pace obj))))
             ((equalp key "d")
              (incf (theta obj) 0.05))
             ((equalp key "a")
@@ -178,5 +182,5 @@
 (defmethod spacewar:update ((obj ship) display &optional event)
   (unless event
     (let ((*display* display))
-      (decf (x obj) (* (sine obj) (pace obj)))
-      (decf (y obj) (* (cosine obj) (pace obj))))))
+      (decf (x obj) (dx obj))
+      (decf (y obj) (dy obj)))))
