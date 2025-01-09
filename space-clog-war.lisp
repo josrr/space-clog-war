@@ -64,7 +64,6 @@
     (blend-function gl :ONE :ONE_MINUS_SRC_ALPHA)
     (clear-color gl 0.0f0 0.0f0 0.0f0 1.0f0)
     (clear-webgl gl :COLOR_BUFFER_BIT)
-    (clear-color gl 0.001f0 0.001f0 0.0f0 0.06f0)
     (set-on-key-down body 'on-key-down :disable-default t)
     (loop
       if (or (not *debug*) (not pausep)) do

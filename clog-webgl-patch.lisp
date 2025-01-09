@@ -1,7 +1,10 @@
 (in-package :clog-webgl)
 
 (export '(texture-image-2d
-          bind-canvas-frame-buffer))
+          copy-texture-image-2d
+          bind-canvas-frame-buffer
+          blit-frame-buffer
+          read-buffer))
 
 (defgeneric texture-image-2d (clog-webgl glenum-target level glenum-internal-format
                               width height border glenum-format glenum-type source)
@@ -110,8 +113,37 @@ Can be NIL, a CLOG-IMG object or a CLOG-IMAGE-DATA object."))
                          (script-id webgl) glenum-type
                          (if source (script-id source) nil))))
 
+(defgeneric copy-texture-image-2d (webgl glenum-target level glenum-internal-format
+                                   x y width height border)
+  (:documentation "Copies pixels from the current WebGLFramebuffer into a 2D
+texture image."))
+
+(defmethod copy-texture-image-2d ((webgl clog-webgl) glenum-target level
+                                  glenum-internal-format x y width height border)
+  (execute webgl
+           (format nil
+                   "copyTexImage2D(~A.~A, ~D, ~A.~A, ~D, ~D, ~D, ~D, ~D)"
+                   (script-id webgl) glenum-target level
+                   (script-id webgl) glenum-internal-format
+                   x y width height border)))
+
+(defgeneric read-buffer (webgl glenum-source)
+  (:documentation "Selects a color buffer as the source for pixels for subsequent calls to copy-tex-image-2d, copy-tex-sub-image-2d, copy-tex-sub-image-3d or read-pixels."))
+
+(defmethod read-buffer ((webgl clog-webgl) glenum-source)
+  (execute webgl (format nil "readBuffer(~A.~A)" (script-id webgl) glenum-source)))
+
+(defgeneric bind-canvas-frame-buffer (webgl glenum-target)
+  (:documentation "Binds to the specified target the provided WebGLFramebuffer, or, if the framebuffer argument is null, the default WebGLFramebuffer, which is associated with the canvas rendering context."))
+
 (defmethod bind-canvas-frame-buffer ((webgl clog-webgl) glenum-target)
   (execute webgl (format nil "bindFramebuffer(~A.~A, null)" (script-id webgl) glenum-target)))
+
+(defgeneric blit-frame-buffer (webgl src-x0 src-y0 src-x1 src-y1 dst-x0 dst-y0 dst-x1 dst-y1 glenum-mask glenum-filter)
+  (:documentation "Transfers a block of pixels from the read framebuffer to the draw framebuffer. Read and draw framebuffers are bound using bind-frame-buffer()."))
+
+(defmethod blit-frame-buffer ((webgl clog-webgl) src-x0 src-y0 src-x1 src-y1 dst-x0 dst-y0 dst-x1 dst-y1 glenum-mask glenum-filter)
+  (execute webgl (format nil "blitFramebuffer(~D, ~D, ~D, ~D, ~D, ~D, ~D, ~D, ~A.~A, ~A.~A)" src-x0 src-y0 src-x1 src-y1 dst-x0 dst-y0 dst-x1 dst-y1 (script-id webgl) glenum-mask (script-id webgl) glenum-filter)))
 
 (defgeneric create-webgl (clog-canvas &key context attributes)
   (:documentation "Create a new CLOG-WebGL from a CLOG-Canvas. Context

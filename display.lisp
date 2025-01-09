@@ -6,7 +6,8 @@
    (vao :reader vao)
    (program :initarg :program :accessor program)))
 
-(defmethod initialize-instance :after ((instance gldata) &rest initargs &key &allow-other-keys)
+(defmethod initialize-instance :after ((instance gldata) &rest initargs
+                                       &key &allow-other-keys)
   (with-slots (vbo vao) instance
     (let ((webgl (getf initargs :webgl)))
       (setf vao (gl:create-vertex-array webgl)
@@ -14,24 +15,35 @@
 
 (defclass texture (gldata)
   ((frame-buffer :reader frame-buffer)
+   (frame-prevbuffer :reader frame-prevbuffer)
    (buffer :reader buffer)
-   (points :reader points)))
+   (prevbuffer :reader prevbuffer)
+   (points :reader points)
+   (clear-color :initform (list 0.0f0 0.0f0 0.0f0 0.0750f0) :reader clear-color)
+   (current-clear-color :accessor current-clear-color)))
 
-(defmethod initialize-instance :after ((instance texture) &rest initargs &key &allow-other-keys)
-  (with-slots (frame-buffer buffer points) instance
+(defmethod initialize-instance :after ((instance texture) &rest initargs
+                                       &key &allow-other-keys)
+  (with-slots (frame-buffer frame-prevbuffer buffer prevbuffer points
+               clear-color current-clear-color)
+      instance
     (let ((webgl (getf initargs :webgl)))
       (setf frame-buffer (gl:create-webgl-frame-buffer webgl)
+            frame-prevbuffer (gl:create-webgl-frame-buffer webgl)
             buffer (gl:create-webgl-texture webgl)
+            prevbuffer (gl:create-webgl-texture webgl)
             points (loop repeat 4
                          collect (make-array 1024
                                              :element-type 'single-float
                                              :initial-element 0.0f0
                                              :adjustable t
-                                             :fill-pointer 0))))))
+                                             :fill-pointer 0))
+            current-clear-color (copy-list clear-color)))))
 
 (defclass quad (gldata)
   ((ebo :reader ebo)
-   (texture-buffer :initarg :texture-buffer :reader texture-buffer)))
+   (texture-buffer :initarg :texture-buffer :reader texture-buffer)
+   (texture-prevbuffer :initarg :texture-prevbuffer :reader texture-prevbuffer)))
 
 (defmethod initialize-instance :after ((instance quad) &rest initargs &key &allow-other-keys)
   (with-slots (vao ebo vbo) instance
@@ -39,7 +51,9 @@
     (let* ((webgl (getf initargs :webgl))
            (program (getf initargs :program))
            (pos (gl:attribute-location program "aPos"))
-           (tex-coords (gl:attribute-location program "aTexCoords")))
+           (tex-coords (gl:attribute-location program "aTexCoords"))
+           (screen-tex (gl:uniform-location program "screenTexture"))
+           (screen-copy-tex (gl:uniform-location program "screenCopyTexture")))
       (setf ebo (gl:create-webgl-buffer webgl))
       (gl:bind-buffer vbo :ARRAY_BUFFER)
       (gl:bind-buffer ebo :ELEMENT_ARRAY_BUFFER)
@@ -48,7 +62,9 @@
       (gl:vertex-attribute-pointer webgl pos 2 :FLOAT nil 16 0)
       (gl:vertex-attribute-pointer webgl tex-coords 2 :FLOAT nil 16 8)
       (gl:enable-vertex-attribute-array webgl pos)
-      (gl:enable-vertex-attribute-array webgl tex-coords))))
+      (gl:enable-vertex-attribute-array webgl tex-coords)
+      (gl:uniform-integer webgl screen-tex 0)
+      (gl:uniform-integer webgl screen-copy-tex 1))))
 
 (defparameter *v-shader* "#version 300 es
 in vec2 posicion;
@@ -111,10 +127,14 @@ out vec4 FragColor;
 in vec2 TexCoords;
 
 uniform sampler2D screenTexture;
+uniform sampler2D screenCopyTexture;
 
 void main()
 {
-    FragColor = texture(screenTexture, TexCoords);
+    vec4 st = texture(screenTexture, TexCoords);
+    vec4 sct = texture(screenCopyTexture, TexCoords);
+    FragColor = st+sct.a*sct*vec4(0.9,0.7,0.25,1.0); // (1.0-st.a)*vec4(0.0, sct.g, 0.0, 1.0);
+    //FragColor = sct;
 }")
 
 
@@ -148,6 +168,7 @@ void main()
     (gl:bind-buffer (vbo obj) :ARRAY_BUFFER)
     (gl:enable-vertex-attribute-array webgl (gl:attribute-location program "posicion"))
     (gl:vertex-attribute-pointer webgl (gl:attribute-location program "posicion") 2 :FLOAT nil 8 0)
+    ;;
     (gl:bind-frame-buffer (frame-buffer obj) :DRAW_FRAMEBUFFER)
     (gl:bind-texture (buffer obj) :TEXTURE_2D)
     (gl:texture-image-2d webgl :TEXTURE_2D 0 :RGBA width height 0 :RGBA :UNSIGNED_BYTE nil)
@@ -155,13 +176,22 @@ void main()
     (gl:texture-parameter-integer webgl :TEXTURE_2D :TEXTURE_MAG_FILTER :LINEAR)
     (gl:frame-buffer-texture-2d webgl :DRAW_FRAMEBUFFER :COLOR_ATTACHMENT0 :TEXTURE_2D
                                 (buffer obj) 0)
+    ;;
+    (gl:bind-frame-buffer (frame-prevbuffer obj) :DRAW_FRAMEBUFFER)
+    (gl:bind-texture (prevbuffer obj) :TEXTURE_2D)
+    (gl:texture-image-2d webgl :TEXTURE_2D 0 :RGBA width height 0 :RGBA :UNSIGNED_BYTE nil)
+    (gl:texture-parameter-integer webgl :TEXTURE_2D :TEXTURE_MIN_FILTER :LINEAR)
+    (gl:texture-parameter-integer webgl :TEXTURE_2D :TEXTURE_MAG_FILTER :LINEAR)
+    (gl:frame-buffer-texture-2d webgl :DRAW_FRAMEBUFFER :COLOR_ATTACHMENT0 :TEXTURE_2D
+                                (prevbuffer obj) 0)
     obj))
 
-(defun make-quad (webgl texture-buffer
+(defun make-quad (webgl texture-buffer texture-prevbuffer
                   &key (v-shader *quad-v-shader*) (f-shader *quad-f-shader*))
   (make-instance 'quad
                  :webgl webgl
                  :texture-buffer texture-buffer
+                 :texture-prevbuffer texture-prevbuffer
                  :program (compile-program webgl v-shader f-shader)))
 
 (defgeneric draw (obj)
@@ -170,7 +200,12 @@ void main()
 (defmethod draw ((obj texture))
   (gl:use-program (program obj))
   (gl:bind-vertex-array (vao obj))
+  (gl:bind-frame-buffer (frame-buffer obj) :READ_FRAMEBUFFER)
+  (gl:bind-frame-buffer (frame-prevbuffer obj) :DRAW_FRAMEBUFFER)
+  (gl:read-buffer (webgl obj) :COLOR_ATTACHMENT0)
+  (gl:blit-frame-buffer (webgl obj) 0 0 1024 1024 0 0 1024 1024 :COLOR_BUFFER_BIT :NEAREST)
   (gl:bind-frame-buffer (frame-buffer obj) :DRAW_FRAMEBUFFER)
+  (apply #'gl:clear-color (webgl obj) (current-clear-color obj))
   (gl:clear-webgl (webgl obj) :COLOR_BUFFER_BIT)
   (gl:bind-buffer (vbo obj) :ARRAY_BUFFER)
   (loop for points in (points obj)
@@ -181,11 +216,25 @@ void main()
           (gl:uniform-float (webgl obj) (gl:uniform-location (program obj) "size") intensity)
           (gl:draw-arrays (webgl obj) :POINTS 0 (/ (fill-pointer points) 2))))
 
+(defmethod draw :after ((obj texture))
+  ;;(gl:clear-webgl (webgl obj) :COLOR_BUFFER_BIT)
+  #|(if (> (fourth (current-clear-color obj)) 0.1)
+      (setf (current-clear-color obj) (copy-list (clear-color obj)))
+      (setf (fourth (current-clear-color obj)) (* (fourth (current-clear-color obj)) 1.005)))
+    (if (> (fourth (current-clear-color obj)) 0.25)
+      (setf (current-clear-color obj) (copy-list (clear-color obj)))
+      (setf (first (current-clear-color obj)) (/ (first (current-clear-color obj)) 1.001)
+            (second (current-clear-color obj)) (/ (second (current-clear-color obj)) 1.001)
+            (fourth (current-clear-color obj)) (* (fourth (current-clear-color obj)) 1.001)))|#)
+
 (defmethod draw ((obj quad))
   (gl:use-program (program obj))
   (gl:bind-canvas-frame-buffer (webgl obj) :DRAW_FRAMEBUFFER)
   (gl:bind-vertex-array (vao obj))
+  (gl:active-texture (webgl obj) :TEXTURE0)
   (gl:bind-texture (texture-buffer obj) :TEXTURE_2D)
+  (gl:active-texture (webgl obj) :TEXTURE1)
+  (gl:bind-texture (texture-prevbuffer obj) :TEXTURE_2D)
   (gl:draw-elements (webgl obj) :TRIANGLES 6 :UNSIGNED_SHORT 0))
 
 ;;;; Display
@@ -210,7 +259,7 @@ void main()
                    :width width
                    :height height
                    :texture texture
-                   :quad (make-quad webgl (buffer texture)))))
+                   :quad (make-quad webgl (buffer texture) (prevbuffer texture)))))
 
 (defun toroid (value display)
   (float (if (< (- (width/2 display)) value (width/2 display))
