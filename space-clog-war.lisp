@@ -3,6 +3,8 @@
 (defparameter *width* 1024)
 (defparameter *height* 1024)
 
+(defparameter *time* 1/60)
+
 (defparameter *debug* nil)
 
 (defun on-key-down (obj event)
@@ -61,8 +63,9 @@
           (align-items div-canvas) :center
           (justify-content div-canvas) :center)
     (enable-capability gl :BLEND)
-    (blend-function gl :ONE :ONE_MINUS_SRC_ALPHA)
+    (blend-function gl :SRC_COLOR :CONSTANT_COLOR)
     (clear-color gl 0.0f0 0.0f0 0.0f0 1.0f0)
+    (blend-color gl 0.91f0 0.91f0 0.81f0 1.0f0)
     (clear-webgl gl :COLOR_BUFFER_BIT)
     (set-on-key-down body 'on-key-down :disable-default t)
     (loop
@@ -74,7 +77,7 @@
         (display:draw display)
       if *debug* do
         (setf (text label) (format nil "~d" (spacewar:x planetarium)))
-      do (sleep 1/60))))
+      do (sleep *time*))))
 
 (defun start ()
   "Start Space clog war!."
