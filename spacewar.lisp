@@ -11,6 +11,9 @@
 (defclass toroidal (obj)
   ())
 
+(defclass gravitational (obj)
+  ())
+
 (defmethod (setf x) :after (new-value (object toroidal))
   (when *display*
     (cond ((> new-value (display:width/2 *display*))
@@ -31,8 +34,28 @@
 (defclass missile (toroidal)
   ())
 
-(defgeneric update (obj display &optional event)
+(defgeneric on-key (obj key)
+  (:documentation "Runs when KEY is pressed"))
+
+(defgeneric update (obj display1)
   (:documentation "Updates OBJ properties"))
+
+(defparameter *gravity* (/ 8.0))
+(defparameter *collision-radius* 1.0)
+(defun fxy (x y)
+  (let ((len (+ (expt (/ x 8.0) 2.0) (expt (/ y 8.0) 2.0))))
+    (let ((fxy (/ (expt (sqrt len) 3.0) 8.0)))
+      fxy)))
+
+(defmethod update :before ((obj gravitational) display)
+  (flet ((fxy (x y)
+           (let ((len (+ (expt (/ x 8.0) 2.0) (expt (/ y 8.0) 2.0))))
+             (let ((fxy (/ (expt (sqrt len) 3.0) 8.0)))
+               fxy))))
+    (let ((*display* display))
+      (let ((fxy (fxy (x obj) (y obj))))
+        (decf (x obj) (/ (* 8.0 (x obj)) fxy))
+        (decf (y obj) (/ (* 8.0 (y obj)) fxy))))))
 
 (defgeneric draw (obj display)
   (:documentation "Draws OBJ in DISPLAY"))
