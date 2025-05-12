@@ -26,7 +26,11 @@
            #:toroidal
            #:x
            #:ot1
-           #:ot2))
+           #:ot2
+           #:left
+           #:right
+           #:up
+           #:down))
 
 (defpackage #:space-clog-war
   (:use #:cl #:clog #:clog-gui #:clog-webgl)
