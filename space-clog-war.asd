@@ -8,8 +8,9 @@
   :serial t
   :depends-on (#:alexandria
                #:clog
+               #:mathkit
                #:rtg-math
-               #:mathkit)
+               #:string-case)
   :components ((:file "package")
                (:file "clog-webgl-patch")
                (:file "display")
