@@ -202,12 +202,14 @@ void main()
    (quad :initarg :quad :reader quad)
    (width :initarg :width :reader width)
    (width/2 :reader width/2)
-   (height :initarg :height :reader height)))
+   (height :initarg :height :reader height)
+   (height/2 :reader height/2)))
 
 (defmethod initialize-instance :after ((instance display) &rest initargs &key &allow-other-keys)
   (declare (ignore initargs))
-  (with-slots (width/2 width) instance
-    (setf width/2 (/ width 2))))
+  (with-slots (width/2 width height/2 height) instance
+    (setf width/2 (/ width 2)
+          height/2 (/ height 2))))
 
 (defparameter *width* 1024)
 (defparameter *height* 1024)

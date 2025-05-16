@@ -8,6 +8,7 @@
            #:draw-point
            #:draw-points
            #:height
+           #:height/2
            #:make-display
            #:width
            #:width/2))
