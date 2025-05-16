@@ -2,6 +2,8 @@
 
 ;;;;
 (defparameter *display* nil)
+(defparameter *gravity* 8.0)
+(defparameter *collision-radius* 8.0)
 
 (defclass obj ()
   ((x :initarg :x :initform 0.0 :accessor x)
@@ -34,28 +36,22 @@
 (defclass missile (toroidal)
   ())
 
-(defgeneric on-key (obj key)
-  (:documentation "Runs when KEY is pressed"))
-
 (defgeneric update (obj display1)
   (:documentation "Updates OBJ properties"))
 
-(defparameter *gravity* (/ 8.0))
-(defparameter *collision-radius* 1.0)
-(defun fxy (x y)
-  (let ((len (+ (expt (/ x 8.0) 2.0) (expt (/ y 8.0) 2.0))))
-    (let ((fxy (/ (expt (sqrt len) 3.0) 8.0)))
-      fxy)))
-
 (defmethod update :before ((obj gravitational) display)
-  (flet ((fxy (x y)
-           (let ((len (+ (expt (/ x 8.0) 2.0) (expt (/ y 8.0) 2.0))))
-             (let ((fxy (/ (expt (sqrt len) 3.0) 8.0)))
-               fxy))))
-    (let ((*display* display))
-      (let ((fxy (fxy (x obj) (y obj))))
-        (decf (x obj) (/ (* 8.0 (x obj)) fxy))
-        (decf (y obj) (/ (* 8.0 (y obj)) fxy))))))
+  (flet ((pof ()
+           (setf (x obj) (1- (display:width/2 *display*))
+                 (y obj) (1- (display:height/2 *display*))))
+         (gravity (len)
+           (let ((fxy (/ (expt (truncate (sqrt len)) 3) *gravity*)))
+             (decf (x obj) (/ (x obj) fxy))
+             (decf (y obj) (/ (y obj) fxy)))))
+    (let ((*display* display)
+          (len (+ (expt (/ (x obj) 8.0) 2.0) (expt (/ (y obj) 8.0) 2.0))))
+      (if (>= len *collision-radius*)
+          (gravity len)
+          (pof)))))
 
 (defgeneric draw (obj display)
   (:documentation "Draws OBJ in DISPLAY"))

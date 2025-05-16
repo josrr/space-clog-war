@@ -1,6 +1,7 @@
 (in-package #:spacewar)
 
-(defclass ship (toroidal) ;gravitational
+;;;
+(defclass ship (toroidal gravitational)
   ((size :initform 1.0 :accessor size)
    (x :initarg :x :initform 0.0 :accessor x)
    (y :initarg :y :initform 0.0 :accessor y)
@@ -11,7 +12,7 @@
    (flipped :initarg :flipped :initform nil :accessor flipped-p)
    (dx :initarg :dx :initform 0.0 :accessor dx)
    (dy :initarg :dy :initform 0.0 :accessor dy)
-   (pace :initarg :pace :initform 0.1 :accessor pace)
+   (pace :initarg :pace :initform 0.01 :accessor pace)
    (theta :initarg :theta :initform 0.0 :accessor theta)
    (sin :initform (sin 0.0) :accessor sine)
    (cos :initform (cos 0.0) :accessor cosine)
@@ -158,9 +159,9 @@
 (defmethod spacewar:update :before ((obj ship) display)
   (declare (ignore display))
   (when (left obj)
-    (incf (theta obj) 0.05))
+    (decf (theta obj) 0.025))
   (when (right obj)
-    (decf (theta obj) 0.05))
+    (incf (theta obj) 0.025))
   (when (down obj)
     (incf (dx obj) (* (sine obj) (pace obj)))
     (incf (dy obj) (* (cosine obj) (pace obj)))))

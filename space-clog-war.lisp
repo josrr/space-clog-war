@@ -2,9 +2,7 @@
 
 (defparameter *width* 1024)
 (defparameter *height* 1024)
-
 (defparameter *time* 1/60)
-
 (defparameter *debug* nil)
 
 (defun on-key-down (obj event)
