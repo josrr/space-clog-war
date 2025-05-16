@@ -1,7 +1,7 @@
 (in-package #:spacewar)
 
 ;;;
-(defclass ship (toroidal gravitational)
+(defclass ship (toroidal explosible gravitational)
   ((size :initform 1.0 :accessor size)
    (x :initarg :x :initform 0.0 :accessor x)
    (y :initarg :y :initform 0.0 :accessor y)

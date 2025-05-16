@@ -16,6 +16,12 @@
 (defclass gravitational (obj)
   ())
 
+(defclass explosible (obj)
+  ((duration :initarg duration :initform 30 :reader duration)
+   (particles :initarg particles :initform 200 :reader particles)
+   (radius :initarg radius :initform 64.0 :reader radius)
+   (explode :initform nil :accessor explodep)))
+
 (defmethod (setf x) :after (new-value (object toroidal))
   (when *display*
     (cond ((> new-value (display:width/2 *display*))
@@ -39,10 +45,20 @@
 (defgeneric update (obj display1)
   (:documentation "Updates OBJ properties"))
 
+(defgeneric explode (obj)
+  (:documentation "Explodes OBJ"))
+
+(defmethod explode ((obj obj))
+  (declare (ignore obj)))
+
+(defmethod explode ((obj explosible))
+  (setf (explodep obj) t))
+
 (defmethod update :before ((obj gravitational) display)
   (flet ((pof ()
-           (setf (x obj) (1- (display:width/2 *display*))
-                 (y obj) (1- (display:height/2 *display*))))
+           (explode obj)
+           (setf (x obj) (1- (display:width/2 display))
+                 (y obj) (1- (display:height/2 display))))
          (gravity (len)
            (let ((fxy (/ (expt (truncate (sqrt len)) 3) *gravity*)))
              (decf (x obj) (/ (x obj) fxy))
@@ -65,3 +81,19 @@
           for x = (x obj) then (+ x bx)
           for y = (y obj) then (+ y by)
           do (display:draw-point display x y))))
+
+(defmethod draw :around ((obj explosible) display)
+  (flet ((draw-particles (duration)
+           (lambda ()
+             (loop repeat (particles obj)
+                   for factor = (random (radius obj))
+                   do (display:draw-point display
+                                          (+ (x obj) (* factor (- (random 1.0) 0.5)))
+                                          (+ (y obj) (* factor (- (random 1.0) 0.5)))))
+             (when (zerop (decf duration))
+               (setf (explodep obj) nil)))))
+    (cond ((explodep obj)
+           (unless (typep (explodep obj) 'function)
+             (setf (explodep obj) (draw-particles (duration obj))))
+           (funcall (explodep obj)))
+         (t (call-next-method)))))
