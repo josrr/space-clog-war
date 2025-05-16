@@ -73,7 +73,7 @@
     (create-gui-menu-item actions :content "Restart" :on-click (lambda (obj) obj))
     (create-gui-menu-item actions :content "Reset" :on-click (lambda (obj) obj))
     (format *debug-io* "~D x ~D~%" (drawing-buffer-width gl) (drawing-buffer-height gl))
-    (add-style sb :element "canvas" '(("width" "1024px") ("height" "1024px")))
+    (add-style sb :element "canvas" '(("width" "90vmin") ("height" "90vmin")))
     (add-class canvas "w3-black")
     (set-border canvas :medium :solid "#0066aa")
     (set-margin canvas "6px" "6px" "6px" "6px")
