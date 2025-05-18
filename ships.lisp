@@ -1,10 +1,8 @@
 (in-package #:spacewar)
 
 ;;;
-(defclass ship (toroidal explosible gravitational)
+(defclass ship (toroidal gravitational explosible)
   ((size :initform 1.0 :accessor size)
-   (x :initarg :x :initform 0.0 :accessor x)
-   (y :initarg :y :initform 0.0 :accessor y)
    (saved-x :initarg :saved-x :initform nil :accessor saved-x)
    (saved-y :initarg :saved-y :initform nil :accessor saved-y)
    (xx :initform 0.0 :accessor xx)
@@ -28,6 +26,12 @@
    (right :initform nil :accessor right)
    (up :initform nil :accessor up)
    (down :initform nil :accessor down)))
+
+(defmethod (setf x) :after (new-value (object ship))
+  (setf (slot-value object 'xx) new-value))
+
+(defmethod (setf y) :after (new-value (object ship))
+  (setf (slot-value object 'yy) new-value))
 
 (defmethod (setf theta) :after (theta (object ship))
   (with-accessors ((sine sine)
@@ -64,7 +68,9 @@
 (defmethod initialize-instance :after ((obj ship) &rest initargs &key &allow-other-keys)
   (setf (theta obj) (getf initargs :theta 0.0)
         (xx obj) (getf initargs :x 0.0)
-        (yy obj) (getf initargs :y 0.0)))
+        (yy obj) (getf initargs :y 0.0)
+        (xm obj) (xx obj)
+        (ym obj) (yy obj)))
 
 (defgeneric draw-point (obj display direction)
   (:method ((obj ship) display (direction (eql :down)))
@@ -103,8 +109,11 @@
 
 (defgeneric flip (obj display)
   (:method ((obj ship) display)
-    (setf (flipped-p obj) (not (flipped-p obj))
-          (saved-x obj) nil
+    (setf (flipped-p obj) (not (flipped-p obj)))
+    (when (flipped-p obj)
+      (setf (width obj) (- (xx obj) (x obj))
+            (height obj) (- (yy obj) (y obj))))
+    (setf (saved-x obj) nil
           (saved-y obj) nil
           (xx obj) (x obj)
           (yy obj) (y obj))
@@ -170,3 +179,7 @@
   (let ((*display* display))
     (decf (x obj) (dx obj))
     (decf (y obj) (dy obj))))
+
+(defmethod explode :after ((obj ship))
+  (setf (dx obj) 0.0
+        (dy obj) 0.0))
