@@ -1,16 +1,30 @@
 (in-package #:spacewar)
 
+;;;;
+(defclass steerable ()
+  ((pace :initarg :pace :initform (/ 14.0) :accessor pace)))
+
+(defmethod spacewar:update :before ((obj steerable) display)
+  (declare (ignore display))
+  (when (left obj)
+    (decf (theta obj) 0.025))
+  (when (right obj)
+    (incf (theta obj) 0.025))
+  (when (down obj)
+    (decf (bx obj) (* (sine obj) (pace obj)))
+    (decf (by obj) (* (cosine obj) (pace obj))))
+  #|(when (up obj)
+    (push (make-missile (x obj) (y obj) (dx obj) (dy obj))
+          (new-objects obj)))|#)
+
 ;;;
-(defclass ship (toroidal gravitational explosible)
+(defclass ship (explosible gravitational steerable toroidal)
   ((size :initform 1.0 :accessor size)
    (saved-x :initarg :saved-x :initform nil :accessor saved-x)
    (saved-y :initarg :saved-y :initform nil :accessor saved-y)
    (xx :initform 0.0 :accessor xx)
    (yy :initform 0.0 :accessor yy)
    (flipped :initarg :flipped :initform nil :accessor flipped-p)
-   (dx :initarg :dx :initform 0.0 :accessor dx)
-   (dy :initarg :dy :initform 0.0 :accessor dy)
-   (pace :initarg :pace :initform 0.01 :accessor pace)
    (theta :initarg :theta :initform 0.0 :accessor theta)
    (sin :initform (sin 0.0) :accessor sine)
    (cos :initform (cos 0.0) :accessor cosine)
@@ -165,20 +179,12 @@
                       #o365114
                       #o700000))
 
-(defmethod spacewar:update :before ((obj ship) display)
-  (declare (ignore display))
-  (when (left obj)
-    (decf (theta obj) 0.025))
-  (when (right obj)
-    (incf (theta obj) 0.025))
-  (when (down obj)
-    (incf (dx obj) (* (sine obj) (pace obj)))
-    (incf (dy obj) (* (cosine obj) (pace obj)))))
-
 (defmethod spacewar:update ((obj ship) display)
   (let ((*display* display))
-    (decf (x obj) (dx obj))
-    (decf (y obj) (dy obj))))
+    (incf (dx obj) (bx obj))
+    (incf (dy obj) (by obj))
+    (incf (x obj) (/ (dx obj) 8.0))
+    (incf (y obj) (/ (dy obj) 8.0))))
 
 (defmethod explode :after ((obj ship))
   (setf (dx obj) 0.0

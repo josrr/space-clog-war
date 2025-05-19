@@ -31,7 +31,8 @@
            #:left
            #:right
            #:up
-           #:down))
+           #:down
+           #:new-objects))
 
 (defpackage #:space-clog-war
   (:use #:cl #:clog #:clog-gui #:clog-webgl)

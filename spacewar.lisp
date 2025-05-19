@@ -2,7 +2,7 @@
 
 ;;;;
 (defparameter *display* nil)
-(defparameter *gravity* 16.0)
+(defparameter *gravity* 8.0)
 (defparameter *collision-radius* 5.0)
 
 (defclass obj ()
@@ -10,9 +10,14 @@
    (y :initarg :y :initform 0.0 :accessor y)
    (xm :initarg :xm :initform 0.0 :accessor xm)
    (ym :initarg :ym :initform 0.0 :accessor ym)
+   (dx :initarg :dx :initform 0.0 :accessor dx)
+   (dy :initarg :dy :initform 0.0 :accessor dy)
+   (bx :initarg :dx :initform 0.0 :accessor bx)
+   (by :initarg :dy :initform 0.0 :accessor by)
    (width :initform 0.0 :accessor width)
    (height :initform 0.0 :accessor height)
-   (box :initarg :box :reader box)))
+   (box :initarg :box :reader box)
+   (new-objects :initform nil :accessor new-objects)))
 
 (defmethod (setf x) :after (new-value (object obj))
   (setf (slot-value object 'xm) (+ new-value (/ (width object) 2.0))))
@@ -49,9 +54,6 @@
 (defclass star (obj)
   ())
 
-(defclass missile (toroidal)
-  ())
-
 (defgeneric update (obj display1)
   (:documentation "Updates OBJ properties"))
 
@@ -64,15 +66,15 @@
 (defmethod explode ((obj explosible))
   (setf (explodep obj) t))
 
-(defmethod update :after ((obj gravitational) display)
+(defmethod update :before ((obj gravitational) display)
   (flet ((pof ()
            (setf (x obj) (1- (display:width/2 display))
                  (y obj) (1- (display:height/2 display)))
            (explode obj))
          (gravity (len)
            (let ((g (/ (* len (sqrt len)) 2.0)))
-             (decf (x obj) (/ (x obj) g))
-             (decf (y obj) (/ (y obj) g)))))
+             (setf (bx obj) (- (/ (x obj) g)))
+             (setf (by obj) (- (/ (y obj) g))))))
     (let ((*display* display)
           (len (+ (expt (/ (xm obj) *gravity*) 2.0)
                   (expt (/ (ym obj) *gravity*) 2.0))))

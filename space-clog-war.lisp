@@ -95,7 +95,10 @@
         (display:clear display)
         (spacewar:draw star display)
         (loop for obj in objects do (spacewar:draw obj display))
-        (loop for obj in objects do (spacewar:update obj display))
+        (loop for obj in objects
+              do (spacewar:update obj display)
+              if (spacewar:new-objects obj)
+                do (push (pop (spacewar:new-objects obj)) objects))
         (display:draw display)
       if *debug* do
         (setf (text label) (format nil "~d" (spacewar:x planetarium)))

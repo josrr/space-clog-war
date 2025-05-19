@@ -16,5 +16,6 @@
                (:file "display")
                (:file "expensive-planetarium")
                (:file "spacewar")
+               (:file "missiles")
                (:file "ships")
                (:file "space-clog-war")))
