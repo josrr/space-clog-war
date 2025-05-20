@@ -54,7 +54,7 @@
          (pausep nil)
          (pause-button (and *debug* (create-button div-canvas :content "Pause"
                                                               :class "btn btn-primary")))
-         (display (display:make-display gl))
+         ;;(display (display:make-display gl))
          (planetarium (make-instance 'expensive-planetarium:planetarium))
          (label (and *debug* (create-p div-canvas
                                        :content (format nil "~d" (spacewar:x planetarium)))))
@@ -63,7 +63,10 @@
                                                 :theta 0.0 :dx 0.0 :dy 0.0))
          (ship-ot2 (make-instance 'spacewar:ot2 :x -256.0 :y -256.0
                                                 :theta pi :dx 0.0 :dy 0.0))
-         (objects (list planetarium ship-ot1 ship-ot2)))
+         ;;(objects (list planetarium ship-ot1 ship-ot2))
+         (context (make-instance 'spacewar:context
+                                 :display (display:make-display gl)
+                                 :objects (list planetarium ship-ot1 ship-ot2))))
     (setf (connection-data-item body "ship-ot1") ship-ot1
           (connection-data-item body "ship-ot2") ship-ot2)
     (when *debug*
@@ -92,14 +95,16 @@
       if (or (not (validp body)) (connection-data-item body "done"))
         return (values)
       if (or (not *debug*) (not pausep)) do
-        (display:clear display)
-        (spacewar:draw star display)
-        (loop for obj in objects do (spacewar:draw obj display))
-        (loop for obj in objects
-              do (spacewar:update obj display)
+        (display:clear (spacewar:display context))
+        (spacewar:draw star (spacewar:display context))
+        (loop for obj in (spacewar:objects context) do (spacewar:draw obj (spacewar:display context)))
+        (loop for obj in (spacewar:objects context)
+              do (spacewar:update obj context)
               if (spacewar:new-objects obj)
-                do (push (pop (spacewar:new-objects obj)) objects))
-        (display:draw display)
+                do (loop for new = (pop (spacewar:new-objects obj))
+                         while new
+                         do (push new (spacewar:objects context))))
+        (display:draw (spacewar:display context))
       if *debug* do
         (setf (text label) (format nil "~d" (spacewar:x planetarium)))
       do (sleep *time*))))

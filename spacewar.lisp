@@ -5,6 +5,10 @@
 (defparameter *gravity* 8.0)
 (defparameter *collision-radius* 5.0)
 
+(defclass context ()
+  ((display :initarg :display :reader display)
+   (objects :initarg :objects :accessor objects)))
+
 (defclass obj ()
   ((x :initarg :x :initform 0.0 :accessor x)
    (y :initarg :y :initform 0.0 :accessor y)
@@ -25,13 +29,13 @@
 (defmethod (setf y) :after (new-value (object obj))
   (setf (slot-value object 'ym) (+ new-value (/ (height object) 2.0))))
 
-(defclass toroidal (obj)
+(defclass toroidal ()
   ())
 
-(defclass gravitational (obj)
+(defclass gravitational ()
   ())
 
-(defclass explosible (obj)
+(defclass explosible ()
   ((duration :initarg duration :initform 60 :reader duration)
    (particles :initarg particles :initform 20 :reader particles)
    (radius :initarg radius :initform 128.0 :reader radius)
@@ -54,32 +58,29 @@
 (defclass star (obj)
   ())
 
-(defgeneric update (obj display1)
+(defgeneric update (obj context)
   (:documentation "Updates OBJ properties"))
 
-(defgeneric explode (obj)
+(defgeneric explode (obj display)
   (:documentation "Explodes OBJ"))
 
-(defmethod explode ((obj obj))
-  (declare (ignore obj)))
+(defmethod explode ((obj obj) display)
+  (declare (ignore obj display)))
 
-(defmethod explode ((obj explosible))
+(defmethod explode ((obj explosible) display)
+  (declare (ignore display))
   (setf (explodep obj) t))
 
-(defmethod update :before ((obj gravitational) display)
-  (flet ((pof ()
-           (setf (x obj) (1- (display:width/2 display))
-                 (y obj) (1- (display:height/2 display)))
-           (explode obj))
-         (gravity (len)
+(defmethod update :before ((obj gravitational) context)
+  (flet ((gravity (len)
            (let ((g (/ (* len (sqrt len)) 2.0)))
              (setf (bx obj) (- (/ (x obj) g)))
              (setf (by obj) (- (/ (y obj) g))))))
-    (let ((*display* display)
+    (let ((*display* (display context))
           (len (+ (expt (/ (xm obj) *gravity*) 2.0)
                   (expt (/ (ym obj) *gravity*) 2.0))))
       (if (< len *collision-radius*)
-          (pof)
+          (explode obj (display context))
           (gravity len)))))
 
 (defgeneric draw (obj display)

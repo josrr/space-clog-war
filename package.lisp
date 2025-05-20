@@ -32,7 +32,10 @@
            #:right
            #:up
            #:down
-           #:new-objects))
+           #:new-objects
+           #:context
+           #:display
+           #:objects))
 
 (defpackage #:space-clog-war
   (:use #:cl #:clog #:clog-gui #:clog-webgl)

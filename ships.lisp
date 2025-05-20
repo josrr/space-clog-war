@@ -4,8 +4,8 @@
 (defclass steerable ()
   ((pace :initarg :pace :initform (/ 14.0) :accessor pace)))
 
-(defmethod spacewar:update :before ((obj steerable) display)
-  (declare (ignore display))
+(defmethod spacewar:update :before ((obj steerable) context)
+  (declare (ignore context))
   (when (left obj)
     (decf (theta obj) 0.025))
   (when (right obj)
@@ -13,12 +13,15 @@
   (when (down obj)
     (decf (bx obj) (* (sine obj) (pace obj)))
     (decf (by obj) (* (cosine obj) (pace obj))))
-  #|(when (up obj)
-    (push (make-missile (x obj) (y obj) (dx obj) (dy obj))
-          (new-objects obj)))|#)
+  (when (up obj)
+    (push (make-missile (- (x obj) (* 8.0 (sine obj)))
+                        (- (y obj) (* 8.0 (cosine obj)))
+                        (- (dx obj) (* 8.0 (sine obj)))
+                        (- (dy obj) (* 8.0 (cosine obj))))
+          (new-objects obj))))
 
 ;;;
-(defclass ship (explosible gravitational steerable toroidal)
+(defclass ship (explosible obj gravitational steerable toroidal)
   ((size :initform 1.0 :accessor size)
    (saved-x :initarg :saved-x :initform nil :accessor saved-x)
    (saved-y :initarg :saved-y :initform nil :accessor saved-y)
@@ -179,13 +182,15 @@
                       #o365114
                       #o700000))
 
-(defmethod spacewar:update ((obj ship) display)
-  (let ((*display* display))
+(defmethod spacewar:update ((obj ship) context)
+  (let ((*display* (display context)))
     (incf (dx obj) (bx obj))
     (incf (dy obj) (by obj))
     (incf (x obj) (/ (dx obj) 8.0))
     (incf (y obj) (/ (dy obj) 8.0))))
 
-(defmethod explode :after ((obj ship))
-  (setf (dx obj) 0.0
-        (dy obj) 0.0))
+(defmethod explode :after ((obj ship) display)
+  (setf (dx obj) 0.0 (dy obj) 0.0
+        (bx obj) 0.0 (by obj) 0.0
+        (x obj) (1- (display:width/2 display))
+        (y obj) (1- (display:height/2 display))))
