@@ -54,7 +54,6 @@
          (pausep nil)
          (pause-button (and *debug* (create-button div-canvas :content "Pause"
                                                               :class "btn btn-primary")))
-         ;;(display (display:make-display gl))
          (planetarium (make-instance 'expensive-planetarium:planetarium))
          (label (and *debug* (create-p div-canvas
                                        :content (format nil "~d" (spacewar:x planetarium)))))
@@ -63,7 +62,6 @@
                                                 :theta 0.0 :dx 0.0 :dy 0.0))
          (ship-ot2 (make-instance 'spacewar:ot2 :x -256.0 :y -256.0
                                                 :theta pi :dx 0.0 :dy 0.0))
-         ;;(objects (list planetarium ship-ot1 ship-ot2))
          (context (make-instance 'spacewar:context
                                  :display (display:make-display gl)
                                  :objects (list planetarium ship-ot1 ship-ot2))))
