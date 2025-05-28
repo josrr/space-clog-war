@@ -114,3 +114,23 @@
              (setf (explodep obj) (draw-particles (duration obj))))
            (funcall (explodep obj)))
           (t (call-next-method)))))
+
+(defgeneric collisionp (a b)
+  (:documentation "Detect collision between A and B"))
+
+(defmethod collisionp ((a explosible) (b explosible))
+  (let ((distance (+ (expt (- (xm a) (xm b)) 2)
+                     (expt (- (ym a) (ym b)) 2))))
+    (< distance 45.0)))
+
+(defgeneric detect-collisions (context))
+
+(defmethod detect-collisions ((context context))
+  (loop with objects = (remove-if-not (lambda (obj)
+                                        (typep obj 'explosible))
+                                      (objects context))
+        for a in objects
+        do (loop for b in objects
+                 if (and (not (eq a b)) (collisionp a b))
+                   do (explode a (display context))
+                      (explode b (display context)))))

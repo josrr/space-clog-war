@@ -35,7 +35,8 @@
            #:new-objects
            #:context
            #:display
-           #:objects))
+           #:objects
+           #:detect-collisions))
 
 (defpackage #:space-clog-war
   (:use #:cl #:clog #:clog-gui #:clog-webgl)

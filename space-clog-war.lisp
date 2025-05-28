@@ -102,6 +102,7 @@
                 do (loop for new = (pop (spacewar:new-objects obj))
                          while new
                          do (push new (spacewar:objects context))))
+        (spacewar:detect-collisions context)
         (display:draw (spacewar:display context))
       if *debug* do
         (setf (text label) (format nil "~d" (spacewar:x planetarium)))
