@@ -8,6 +8,7 @@
   :serial t
   :depends-on (#:alexandria
                #:clog
+               #:local-time
                #:mathkit
                #:rtg-math
                #:string-case)
