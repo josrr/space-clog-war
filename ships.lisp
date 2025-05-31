@@ -3,7 +3,7 @@
 ;;;;
 (defclass steerable ()
   ((pace :initarg :pace :initform (/ 14.0) :accessor pace)
-   (fuel :initform 200 :accessor fuel)
+   (fuel :initform 1000 :accessor fuel)
    (shots :initform 10 :accessor shots)
    (previous-shot :initform nil :accessor previous-shot)))
 
@@ -136,16 +136,23 @@
 
 (defgeneric flip (obj display)
   (:method ((obj ship) display)
-    (setf (flipped-p obj) (not (flipped-p obj)))
-    (when (flipped-p obj)
-      (setf (width obj) (- (xx obj) (x obj))
-            (height obj) (- (yy obj) (y obj))))
-    (setf (saved-x obj) nil
-          (saved-y obj) nil
-          (xx obj) (x obj)
-          (yy obj) (y obj))
-    (when (flipped-p obj)
-      (spacewar:draw obj display))))
+    (flet ((draw-exhaust ()
+             (loop repeat (+ 5 (random 15))
+                   for x = (xx obj) then (+ x (sine obj))
+                   for y = (yy obj) then (+ y (cosine obj))
+                   do (display:draw-point display x y 0))))
+      (setf (flipped-p obj) (not (flipped-p obj)))
+      (when (flipped-p obj)
+        (setf (width obj) (- (xx obj) (x obj))
+              (height obj) (- (yy obj) (y obj)))
+        (when (and (down obj) (> (fuel obj) 0))
+          (draw-exhaust)))
+      (setf (saved-x obj) nil
+            (saved-y obj) nil
+            (xx obj) (x obj)
+            (yy obj) (y obj))
+      (when (flipped-p obj)
+        (spacewar:draw obj display)))))
 
 (eval-when (:load-toplevel :compile-toplevel :execute)
   (defun generate-instruction (byte)
