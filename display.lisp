@@ -184,7 +184,7 @@ void main()
         if (plusp (fill-pointer points)) do
           (gl:buffer-data (vbo obj) (coerce points 'list) "Float32Array" :STATIC_DRAW)
           (gl:uniform-float (webgl obj) (gl:uniform-location (program obj) "color")
-                            0.3 0.9 0.8)
+                            0.1 0.8 0.8)
           (gl:uniform-float (webgl obj) (gl:uniform-location (program obj) "size") intensity)
           (gl:draw-arrays (webgl obj) :POINTS 0 (/ (fill-pointer points) 2))))
 
